@@ -13,21 +13,23 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="AUto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="AUto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Column="0" Grid.Row="0" Text="Messages Sent" FontWeight="Bold" Margin="5"/>
-        <ListBox Grid.Column="0" Grid.Row="1" ItemsSource="{Binding MessagesSent}" Width="400" Height="100" Margin="5" Background="LightYellow"/>
+        <TextBlock Grid.Column="0" Grid.Row="2" Text="Messages Sent" FontWeight="Bold" Margin="5"/>
+        <ListBox Grid.Column="0" Grid.Row="3" ItemsSource="{Binding MessagesSent}" Width="400" Height="400" Margin="5" Background="LightYellow"/>
 
-        <TextBlock Grid.Column="1" Grid.Row="0" Text="Messages Received" FontWeight="Bold" Margin="5"/>
-        <ListBox Grid.Column="1" Grid.Row="1" ItemsSource="{Binding MessagesReceived}" Width="400" Height="100" Margin="5" Background="LightYellow"/>
+        <TextBlock Grid.Column="1" Grid.Row="2" Text="Messages Received" FontWeight="Bold" Margin="5"/>
+        <ListBox Grid.Column="1" Grid.Row="3" ItemsSource="{Binding MessagesReceived}" Width="400" Height="400" Margin="5" Background="LightYellow"/>
 
-        <Button Grid.Column="0" Grid.Row="2" Content="Start Server" Command="{Binding StartServerCommand}" Width="200" Height="30" Margin="5"/>
-        <Button Grid.Column="0" Grid.Row="3" Content="Send Request" Command="{Binding SendRequestCommand}" Width="200" Height="30" Margin="5"/>
-        <Button Grid.Column="1" Grid.Row="2" Content="Summarize" Command="{Binding SummarizeCommand}" Width="200" Height="30" Margin="5"/>
-        <Button Grid.Column="1" Grid.Row="3" Content="Send Summary" Command="{Binding SendSummaryCommand}" Width="200" Height="30" Margin="5"/>
+     
+        <Button Grid.Column="0" Grid.Row="4" Content="Send Request" Command="{Binding SendRequestCommand}" Width="200" Height="30" Margin="5"/>
+        <Button Grid.Column="0" Grid.Row="5" Content="Summarize" Command="{Binding SummarizeCommand}" Width="200" Height="30" Margin="5"/>
+        <Button Grid.Column="1" Grid.Row="4" Content="Send Summary" Command="{Binding SendSummaryCommand}" Width="200" Height="30" Margin="5"/>
+        <Button Grid.Column="1" Grid.Row="5" Content="Start Cloning" Command="{Binding StartCloningCommand}" Width="200" Height="30" Margin="5"/>
     </Grid>
 </Page>
