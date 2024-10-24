@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace FileCloner.Models.Networking
@@ -131,6 +133,20 @@ namespace FileCloner.Models.Networking
                                     Thread receiveThread = new(ReceiveSummary);
                                     receiveThread.Start();
                                 }
+                                else if (message.Contains("<StartCloning>"))
+                                {
+                                    // string filePath = "\"C:\\dev\\SoftwareEngineering2024\\SE_Group_Project\\FileCloner\\Assets\\Files\\sender\\a.txt\"";
+                                    // string filePath = "C:\\Downloads\\dummy.txt";
+                                    string filePath = "..\\..\\..\\Assets\\Files\\sender\\a.txt";
+                                    Thread sendFileThread = new(() => { SendFile(filePath, "localhost", ListenPort); });
+                                    sendFileThread.Start();
+                                }
+                                else if (message.Contains("<FILE_HEADER"))
+                                {
+                                    // make a thread and start the thread
+                                    // the thread should receive the file contents and save it somewhere
+
+                                }
                                 _subscribers[id].OnMessageReceived(message);
                             }
                             else
@@ -147,19 +163,88 @@ namespace FileCloner.Models.Networking
             }
         }
 
+        // Sends the contents of the file
+        public void SendFile(string filePath, string ipAddress, int port)
+        {
+            // Check if the file exists
+            if (!File.Exists(filePath))
+            {
+                // File does not exist, log an error and display the current working directory
+                string currentDirectory = Directory.GetCurrentDirectory();
+                Debug.WriteLine($"File not found: {filePath}");
+                Debug.WriteLine($"Current working directory: {currentDirectory}");
+                return;
+            }
+
+            try
+            {
+                // Create a TcpClient and connect to the specified IP address and port
+                using TcpClient client = new TcpClient(ipAddress, port);
+                Debug.WriteLine($"Connected to {ipAddress}:{port}");
+
+                // Get the network stream to send data
+                using NetworkStream stream = client.GetStream();
+
+                // Print the absolute path of the file
+                string absolutePath = Path.GetFullPath(filePath);
+                Debug.WriteLine($"Sending file from path: {absolutePath}");
+
+                // Open the file for reading
+                using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+
+                byte[] buffer = new byte[8192]; // 8 KB buffer
+                int bytesRead;
+
+                // Send file size to the server (optional, but often useful)
+                long fileSize = fileStream.Length;
+                // Create and send the header
+                string fileName = Path.GetFileName(filePath);
+                string header = $"FILE_HEADER:{fileName}:{fileSize}\n"; // Simple header format
+                byte[] headerBytes = Encoding.ASCII.GetBytes(header);
+                stream.Write(headerBytes, 0, headerBytes.Length);
+                Debug.WriteLine($"Sent header: {header}");
+
+                byte[] fileSizeBytes = BitConverter.GetBytes(fileSize);
+                stream.Write(fileSizeBytes, 0, fileSizeBytes.Length);
+                Debug.WriteLine($"File size sent: {fileSize} bytes");
+
+                // Read the file and send it over the network in chunks
+                while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    stream.Write(buffer, 0, bytesRead);
+
+                    // Optionally log the sent buffer in debug (text and hex formats)
+                    string bufferAsString = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                    Debug.WriteLine($"Sent {bytesRead} bytes. Buffer as string: {bufferAsString}");
+
+                    string bufferAsHex = BitConverter.ToString(buffer, 0, bytesRead);
+                    Debug.WriteLine($"Buffer in hex: {bufferAsHex}");
+                }
+
+                // File transfer is complete
+                Debug.WriteLine("File transfer complete.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error while sending the file: {ex.Message}");
+            }
+        }
+
         // Retrieves the IP addresses of all connected clients
         public List<string> GetAllActiveClientIPAddresses()
         {
             List<string> activeClients = new List<string>();
-            // activeClients.Add(myIP);
-            activeClients.Add("10.32.16.142");
+            activeClients.Add(myIP);
+            // activeClients.Add("10.32.16.142");
             return activeClients;
         }
 
         public void AcceptRequest()
         {
             string message = "<Acceptance & a JSON file>";
-            SendMessage("10.32.16.142", ListenPort, "ChatMessenger", message);
+            // SendMessage("10.32.16.142", ListenPort, "ChatMessenger", message);
+            SendMessage("localhost", ListenPort, "ChatMessenger", message);
         }
 
         public void ReceiveSummary()

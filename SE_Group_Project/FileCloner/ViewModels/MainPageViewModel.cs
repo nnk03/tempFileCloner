@@ -91,6 +91,15 @@ namespace FileCloner.ViewModels
 
         private void StartCloning()
         {
+            string requestMessage = "<StartCloning>";
+            List<string> activeClientIPAddresses = _communicator.GetAllActiveClientIPAddresses();
+            foreach (string clientIP in activeClientIPAddresses)
+            {
+                _chatMessenger.SendMessage(clientIP, int.Parse(ReceivePort), requestMessage);
+                MessagesSent.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {clientIP} $ {requestMessage}");
+                OnPropertyChanged(nameof(MessagesSent));
+            }
+
             Dispatcher.Invoke(() => {
                 MessageBox.Show("File Cloning Started");
             });

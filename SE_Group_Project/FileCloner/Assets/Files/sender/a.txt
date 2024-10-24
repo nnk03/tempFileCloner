@@ -1,2 +1,1 @@
-﻿file name = a.txt
-Hi from sender
+﻿Hello World
