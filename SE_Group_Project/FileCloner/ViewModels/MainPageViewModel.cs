@@ -43,21 +43,24 @@ namespace FileCloner.ViewModels
                 // likely run on a worker thread. However we do not need to explicitly
                 // dispatch to the UI thread here because OnPropertyChanged event is
                 // automatically marshaled to the UI thread.
-                MessagesReceived.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
-                OnPropertyChanged(nameof(MessagesReceived));
+                Dispatcher.Invoke(() =>
+                {
+                    MessagesReceived.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
+                    OnPropertyChanged(nameof(MessagesReceived));
+                });
             };
 
             SendRequestCommand = new RelayCommand(SendRequest);
             SummarizeCommand = new RelayCommand(SummarizeResponses);
             SendSummaryCommand = new RelayCommand(SendSummary);
-            StartCloningCommand = new RelayCommand(StartCloning);   
+            StartCloningCommand = new RelayCommand(StartCloning);
         }
 
         private void SendRequest()
         {
             string requestMessage = "<Request>";
             List<string> activeClientIPAddresses = _communicator.GetAllActiveClientIPAddresses();
-            foreach(string clientIP in activeClientIPAddresses)
+            foreach (string clientIP in activeClientIPAddresses)
             {
                 _chatMessenger.SendMessage(clientIP, int.Parse(ReceivePort), requestMessage);
                 MessagesSent.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {clientIP} $ {requestMessage}");

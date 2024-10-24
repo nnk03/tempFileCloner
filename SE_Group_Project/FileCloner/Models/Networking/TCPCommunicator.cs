@@ -10,7 +10,7 @@ namespace FileCloner.Models.Networking
         private readonly TcpListener _listener;     // TCP listener to accept connections.
         private readonly Thread _listenThread;      // Thread that listens for messages on the TCP port.
         private readonly Dictionary<string, IMessageListener> _subscribers; // List of subscribers.
-        private string myIP = string.Empty;
+        private string myIP = "localhost";
 
         /// <inheritdoc />
         public int ListenPort { get; private set; }
@@ -18,16 +18,6 @@ namespace FileCloner.Models.Networking
         public TCPCommunicator(int listenPort)
         {
             _subscribers = new Dictionary<string, IMessageListener>();
-
-            // Get all IP addresses associated with the local machine
-            IPAddress[] addresses = Dns.GetHostAddresses(Dns.GetHostName());
-            foreach (IPAddress ip in addresses)
-            {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)  // IPv4 address
-                {
-                   myIP = ip.ToString();
-                }
-            }
 
             // Create and start the thread that listens for messages.
             ListenPort = listenPort;
@@ -125,11 +115,11 @@ namespace FileCloner.Models.Networking
                             {
                                 if (message.Contains("<Request>"))
                                 {
-                                    AcceptRequest(client);
+                                    AcceptRequest();
                                 }
-                                else if (message.Contains("<Summary>")) 
+                                else if (message.Contains("<Summary>"))
                                 {
-                                    ReceiveSummary(client);
+                                    ReceiveSummary();
                                 }
                                 _subscribers[id].OnMessageReceived(message);
                             }
@@ -155,28 +145,16 @@ namespace FileCloner.Models.Networking
             return activeClients;
         }
 
-        public void AcceptRequest(TcpClient client)
+        public void AcceptRequest()
         {
             string message = "<Acceptance & a JSON file>";
-            byte[] messageBytes = Encoding.UTF8.GetBytes($"ChatMessenger: {myIP}${message}");
-            try
-            {
-                NetworkStream stream = client.GetStream();
-                stream.Write(messageBytes, 0, messageBytes.Length);
-                Debug.WriteLine($"Sent acceptance : {message} to requester: {((IPEndPoint)client.Client.RemoteEndPoint)?.Address}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine("Failed to accept clone request : " + e.Message);
-            }
+            SendMessage("localhost", ListenPort, "ChatMessenger", message);
         }
 
-        public void ReceiveSummary(TcpClient client)
+        public void ReceiveSummary()
         {
-            byte[] summaryBytes = Encoding.UTF8.GetBytes($"ChatMessenger: {myIP}$<Files for cloning>");
-            NetworkStream stream = client.GetStream();
-            stream.Write(summaryBytes, 0, summaryBytes.Length);
-            Debug.WriteLine($"Sent summary to requester: {((IPEndPoint)client.Client.RemoteEndPoint)?.Address}");
+            string message = "<Files for cloning>";
+            SendMessage("localhost", ListenPort, "ChatMessenger", message);
         }
     }
 }
