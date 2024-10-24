@@ -9,7 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Files\" />
+    <Compile Remove="Assets\Files\Data\**" />
+    <EmbeddedResource Remove="Assets\Files\Data\**" />
+    <None Remove="Assets\Files\Data\**" />
+    <Page Remove="Assets\Files\Data\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Assets\Images\" />
   </ItemGroup>
 

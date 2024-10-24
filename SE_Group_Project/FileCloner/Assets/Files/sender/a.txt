@@ -1,0 +1,2 @@
+﻿file name = a.txt
+Hi from sender
