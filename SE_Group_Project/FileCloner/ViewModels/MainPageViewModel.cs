@@ -64,7 +64,7 @@ namespace FileCloner.ViewModels
             {
                 _chatMessenger.SendMessage(clientIP, int.Parse(ReceivePort), requestMessage);
                 MessagesSent.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {clientIP} $ {requestMessage}");
-                OnPropertyChanged(nameof(MessagesReceived));
+                OnPropertyChanged(nameof(MessagesSent));
             }
         }
 

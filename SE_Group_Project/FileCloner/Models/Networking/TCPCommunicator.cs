@@ -95,6 +95,13 @@ namespace FileCloner.Models.Networking
                 {
                     // Accept a TCP client connection.
                     using TcpClient client = _listener.AcceptTcpClient();
+
+                    // for finding the ip address of the accepted connectoin
+                    IPEndPoint clientEndPoint = (IPEndPoint)client.Client.RemoteEndPoint;
+                    string clientIPAddress = clientEndPoint.Address.ToString();
+                    int clientPort = clientEndPoint.Port;
+                    Debug.WriteLine($"Received Connection from {clientIPAddress}:{clientPort}");
+
                     NetworkStream stream = client.GetStream();
 
                     // Read the incoming message.
@@ -109,17 +116,20 @@ namespace FileCloner.Models.Networking
                     {
                         string id = tokens[0];
                         string message = tokens[1];
+                        Debug.WriteLine($"Message Received is : {message}");
                         lock (this)
                         {
                             if (_subscribers.ContainsKey(id))
                             {
                                 if (message.Contains("<Request>"))
                                 {
-                                    AcceptRequest();
+                                    Thread acceptThread = new(AcceptRequest);
+                                    acceptThread.Start();
                                 }
                                 else if (message.Contains("<Summary>"))
                                 {
-                                    ReceiveSummary();
+                                    Thread receiveThread = new(ReceiveSummary);
+                                    receiveThread.Start();
                                 }
                                 _subscribers[id].OnMessageReceived(message);
                             }
@@ -141,14 +151,15 @@ namespace FileCloner.Models.Networking
         public List<string> GetAllActiveClientIPAddresses()
         {
             List<string> activeClients = new List<string>();
-            activeClients.Add(myIP);
+            // activeClients.Add(myIP);
+            activeClients.Add("10.32.16.142");
             return activeClients;
         }
 
         public void AcceptRequest()
         {
             string message = "<Acceptance & a JSON file>";
-            SendMessage("localhost", ListenPort, "ChatMessenger", message);
+            SendMessage("10.32.16.142", ListenPort, "ChatMessenger", message);
         }
 
         public void ReceiveSummary()
