@@ -203,7 +203,11 @@ namespace FileCloner.Models.Networking
                 long fileSize = fileStream.Length;
                 // Create and send the header
                 string fileName = Path.GetFileName(filePath);
+<<<<<<< Updated upstream
                 string header = $"<FILE_HEADER>:{fileName}:{fileSize}\n"; // Simple header format
+=======
+                string header = $"<FILE_HEADER>\n"; // Simple header format
+>>>>>>> Stashed changes
                 byte[] headerBytes = Encoding.ASCII.GetBytes(header);
                 stream.Write(headerBytes, 0, headerBytes.Length);
                 Debug.WriteLine($"Sent header: {header}");
