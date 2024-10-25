@@ -146,8 +146,8 @@ namespace FileCloner.Models.Networking
                                     // make a thread and start the thread
                                     // the thread should receive the file contents and save it somewhere
                                     string saveDirectory = "..\\..\\..\\Assets\\Files\\receiver";
-                                    //Thread receiveFileThread = new(() => { ReceiveFile(saveDirectory, "localhost", ListenPort); });
-                                    //receiveFileThread.Start();
+                                    Thread receiveFileThread = new(() => { ReceiveFile(saveDirectory, "localhost", ListenPort, client); });
+                                    receiveFileThread.Start();
                                     Debug.WriteLine("Nothing happens here!");
                                 }
                                 _subscribers[id].OnMessageReceived(message);
@@ -234,7 +234,7 @@ namespace FileCloner.Models.Networking
             }
         }
 
-        public void ReceiveFile(string saveDirectory, string ipAddress, int port)
+        public void ReceiveFile(string saveDirectory, string ipAddress, int port, TcpClient client)
         {
             // Check if the file exists
             //if (File.Exists(filePath))
@@ -247,13 +247,13 @@ namespace FileCloner.Models.Networking
             //}
             try
             {
-                TcpListener listener = new TcpListener(IPAddress.Parse(ipAddress), port);
-                listener.Start();
-                Debug.WriteLine($"Listening on {ipAddress}:{port}");
+                // TcpListener listener = new TcpListener(IPAddress.Parse(ipAddress), port);
+                // listener.Start();
+                // Debug.WriteLine($"Listening on {ipAddress}:{port}");
 
-                // Create a TcpClient and connect to the specified IP address and port
-                using TcpClient client = listener.AcceptTcpClient();
-                Debug.WriteLine($"Client connected");
+                // // Create a TcpClient and connect to the specified IP address and port
+                // using TcpClient client = listener.AcceptTcpClient();
+                // Debug.WriteLine($"Client connected");
 
                 // Get the network stream to send data
                 using NetworkStream stream = client.GetStream();
