@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Assets\Files\receiver\" />
     <Folder Include="Assets\Images\" />
   </ItemGroup>
 

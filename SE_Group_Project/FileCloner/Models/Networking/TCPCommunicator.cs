@@ -141,11 +141,14 @@ namespace FileCloner.Models.Networking
                                     Thread sendFileThread = new(() => { SendFile(filePath, "localhost", ListenPort); });
                                     sendFileThread.Start();
                                 }
-                                else if (message.Contains("<FILE_HEADER"))
+                                else if (message.Contains("<FILE_HEADER>"))
                                 {
                                     // make a thread and start the thread
                                     // the thread should receive the file contents and save it somewhere
-
+                                    string saveDirectory = "..\\..\\..\\Assets\\Files\\receiver";
+                                    //Thread receiveFileThread = new(() => { ReceiveFile(saveDirectory, "localhost", ListenPort); });
+                                    //receiveFileThread.Start();
+                                    Debug.WriteLine("Nothing happens here!");
                                 }
                                 _subscribers[id].OnMessageReceived(message);
                             }
@@ -200,7 +203,7 @@ namespace FileCloner.Models.Networking
                 long fileSize = fileStream.Length;
                 // Create and send the header
                 string fileName = Path.GetFileName(filePath);
-                string header = $"FILE_HEADER:{fileName}:{fileSize}\n"; // Simple header format
+                string header = $"<FILE_HEADER>:{fileName}:{fileSize}\n"; // Simple header format
                 byte[] headerBytes = Encoding.ASCII.GetBytes(header);
                 stream.Write(headerBytes, 0, headerBytes.Length);
                 Debug.WriteLine($"Sent header: {header}");
@@ -231,6 +234,82 @@ namespace FileCloner.Models.Networking
             }
         }
 
+        public void ReceiveFile(string saveDirectory, string ipAddress, int port)
+        {
+            // Check if the file exists
+            //if (File.Exists(filePath))
+            //{
+            //    // File does not exist, log an error and display the current working directory
+            //    string currentDirectory = Directory.GetCurrentDirectory();
+            //    Debug.WriteLine($"File already exists at: {filePath}");
+            //    //Debug.WriteLine($"Current working directory: {currentDirectory}");
+            //    //return;
+            //}
+            try
+            {
+                TcpListener listener = new TcpListener(IPAddress.Parse(ipAddress), port);
+                listener.Start();
+                Debug.WriteLine($"Listening on {ipAddress}:{port}");
+
+                // Create a TcpClient and connect to the specified IP address and port
+                using TcpClient client = listener.AcceptTcpClient();
+                Debug.WriteLine($"Client connected");
+
+                // Get the network stream to send data
+                using NetworkStream stream = client.GetStream();
+
+                byte[] headerBuffer = new byte[1024];
+                int headerBytesRead = stream.Read(headerBuffer, 0 , headerBuffer.Length);
+                string header = Encoding.ASCII.GetString(headerBuffer, 0, headerBytesRead);
+                Debug.WriteLine($"Received File header: {header}");
+
+                string[] headerParts = header.Split(':');
+                if (headerParts.Length < 3 || headerParts[0] != "<FILE_HEADER>")
+                {
+                    Debug.WriteLine("Invalid header receiver. Aborting!");
+                    return;
+                }
+
+                string fileName = headerParts[1];
+                long fileSize = long.Parse(headerParts[2]);
+
+                string filePath = Path.Combine(saveDirectory, fileName);
+                Debug.WriteLine($"Saving file to: {filePath}");
+
+                FileStream? fileStream = null;
+
+                if (File.Exists(filePath))
+                {
+                    // File already exists, rewrite the current file
+                    string currentDirectory = Directory.GetCurrentDirectory();
+                    Debug.WriteLine($"File already exists at: {filePath}");
+                    fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Write);
+                    //return;
+                }
+                // Otherwise open the file for reading
+                else
+                {
+                    fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+                }
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                int totalBytesReceived = 0;
+
+                // Read the file and send it over the network in chunks
+                while ((totalBytesReceived <= fileSize &&  (bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0))
+                {
+                    fileStream.Write(buffer, 0, bytesRead);
+                    totalBytesReceived += bytesRead;
+                }
+
+                // File transfer is complete
+                Debug.WriteLine($"File receiving is complete. Received {totalBytesReceived} bytes");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error while receiving the file: {ex.Message}");
+            }
+        }
         // Retrieves the IP addresses of all connected clients
         public List<string> GetAllActiveClientIPAddresses()
         {
